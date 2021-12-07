@@ -2,6 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Flex, Box, Text, Button } from "@chakra-ui/react";
 
+import Property from "../components/Property";
+import { baseUrl, fetchApi } from "../utils/fetchApi";
+
 const Banner = ({
   purpose,
   title1,
@@ -28,7 +31,7 @@ const Banner = ({
         <br />
         {desc2}
       </Text>
-      <Button fontSize="xl">
+      <Button fontSize="xl" bg="blue.300" color="white">
         <Link href={linkName}>
           <a>{buttonText}</a>
         </Link>
@@ -37,7 +40,8 @@ const Banner = ({
   </Flex>
 );
 
-export default function Home() {
+export default function Home({ propertiesForSale, propertiesForRent }) {
+  
   return (
     <Box>
       
@@ -51,9 +55,10 @@ export default function Home() {
         linkName="/search?purpose=for-rent"
         imageUrl="https://bayut-production.s3.eu-central-1.amazonaws.com/image/145426814/33973352624c48628e41f2ec460faba4"
       />
-
+      
       <Flex>
         {/* Buscar as propriedades e mapeá-las */}
+        {propertiesForRent.map((property) => <Property property={property} key={property.id} />)}
       </Flex>
 
       <Banner
@@ -67,6 +72,19 @@ export default function Home() {
         imageUrl="https://bayut-production.s3.eu-central-1.amazonaws.com/image/110993385/6a070e8e1bae4f7d8c1429bc303d2008"
       />
         {/* Buscar as propriedades e mapeá-las */}
+        {propertiesForSale.map((property) => <Property property={property} key={property.id} />)}
     </Box>
   );
+}
+
+export async function getStaticProps() {
+  const propertyForSale = await fetchApi(`${baseUrl}/properties/list?locationExternalIDs=5002&purpose=for-sale&hitsPerPage=6`)
+  const propertyForRent = await fetchApi(`${baseUrl}/properties/list?locationExternalIDs=5002&purpose=for-rent&hitsPerPage=6`)
+
+  return {
+    props: {
+      propertiesForSale: propertyForSale?.hits,
+      propertiesForRent: propertyForRent?.hits,
+    },
+  };
 }
